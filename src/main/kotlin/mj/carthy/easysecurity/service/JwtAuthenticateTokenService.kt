@@ -6,9 +6,9 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
-import mj.carthy.easysecurity.model.Token
-import mj.carthy.easysecurity.model.UserSecurity
 import mj.carthy.easyutils.enums.Sexe
+import mj.carthy.easyutils.model.Token
+import mj.carthy.easyutils.model.UserSecurity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

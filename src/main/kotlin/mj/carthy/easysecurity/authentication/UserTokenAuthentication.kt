@@ -1,6 +1,6 @@
 package mj.carthy.easysecurity.authentication
 
-import mj.carthy.easysecurity.model.UserSecurity
+import mj.carthy.easyutils.model.UserSecurity
 import org.springframework.security.authentication.AbstractAuthenticationToken
 
 class UserTokenAuthentication(

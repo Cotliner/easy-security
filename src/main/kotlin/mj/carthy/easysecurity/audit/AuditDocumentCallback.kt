@@ -16,51 +16,51 @@ import java.util.*
 
 class AuditDocumentCallback : ReactiveBeforeConvertCallback<BaseDocument<UUID?>> {
 
-    companion object { const val SYSTEM = "system" }
+  companion object { const val SYSTEM = "system" }
 
-    override fun onBeforeConvert(
-            document: BaseDocument<UUID?>,
-            collection: String
-    ): Publisher<BaseDocument<UUID?>> = mono {
-        val now = Instant.now()
-        val username = username()
-        setLastModifiedDate(setCreated(document, username, now), username, now)
+  override fun onBeforeConvert(
+    document: BaseDocument<UUID?>,
+    collection: String
+  ): Publisher<BaseDocument<UUID?>> = mono {
+    val now = Instant.now()
+    val username = username()
+
+    if (document.id != null) setCreated(document, username, now)
+
+    setLastModifiedDate(document, username, now)
+
+    document
+  }
+
+  @VisibleForTesting fun <T : BaseDocument<UUID?>> setCreated(
+    documentToAudit: T,
+    username: String,
+    date: Instant
+  ) {
+    documentToAudit.id = UUID.randomUUID()
+    documentToAudit.createdBy = username
+    documentToAudit.createdDate = date
+  }
+
+  @VisibleForTesting fun <T : BaseDocument<UUID?>> setLastModifiedDate(
+    documentToAudit: T,
+    username: String,
+    date: Instant
+  ) {
+    documentToAudit.lastModifiedBy = username
+    documentToAudit.lastModifiedDate = date
+  }
+
+  @VisibleForTesting suspend fun username(): String = ReactiveSecurityContextHolder.getContext().map {
+    getCurrentAuditor(it)
+  }.switchIfEmpty(Mono.just(SYSTEM)).awaitSingle()
+
+  @VisibleForTesting fun getCurrentAuditor(auth: SecurityContext): String = when (auth.authentication) {
+    is UserTokenAuthentication -> when (auth.authentication.principal) {
+      is UserDetails -> (auth.authentication.principal as UserDetails).username
+      is String -> auth.authentication.principal as String
+      else -> SYSTEM
     }
-
-    @VisibleForTesting fun <T:  BaseDocument<UUID?>> setCreated(
-            documentToAudit: T,
-            username: String,
-            date: Instant
-    ): T  {
-        if(documentToAudit.id == null) {
-            documentToAudit.id = UUID.randomUUID()
-            documentToAudit.createdBy = username
-            documentToAudit.createdDate = date
-        }
-        return documentToAudit
-    }
-
-    @VisibleForTesting fun <T:  BaseDocument<UUID?>> setLastModifiedDate(
-            documentToAudit: T,
-            username: String,
-            date: Instant
-    ): T {
-        documentToAudit.lastModifiedBy = username
-        documentToAudit.lastModifiedDate = date
-        return documentToAudit;
-    }
-
-    @VisibleForTesting suspend fun username(): String = ReactiveSecurityContextHolder.getContext().map {
-        auth: SecurityContext -> getCurrentAuditor(auth)
-    }.switchIfEmpty(Mono.just(SYSTEM)).awaitSingle()
-
-    @VisibleForTesting fun getCurrentAuditor(
-            auth: SecurityContext
-    ): String = when (auth.authentication) {
-        is UserTokenAuthentication -> when (auth.authentication.principal) {
-            is UserDetails -> (auth.authentication.principal as UserDetails).username
-            is String -> auth.authentication.principal as String
-            else -> SYSTEM
-        } else -> SYSTEM
-    }
+    else -> SYSTEM
+  }
 }

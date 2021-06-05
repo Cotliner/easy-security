@@ -1,7 +1,8 @@
 package mj.carthy.easysecurity.configuration
 
 import org.springframework.context.annotation.Bean
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.FORBIDDEN
+import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.core.AuthenticationException
@@ -14,9 +15,9 @@ open class BaseSecurityConfiguration {
             .csrf().disable().formLogin().disable().httpBasic().disable()
             .exceptionHandling().authenticationEntryPoint {
                 swe: ServerWebExchange,
-                _: AuthenticationException -> Mono.fromRunnable { swe.response.statusCode = HttpStatus.UNAUTHORIZED }
+                _: AuthenticationException -> Mono.fromRunnable { swe.response.statusCode = UNAUTHORIZED }
             }.accessDeniedHandler {
                 swe: ServerWebExchange,
-                _: AccessDeniedException -> Mono.fromRunnable { swe.response.statusCode = HttpStatus.FORBIDDEN }
+                _: AccessDeniedException -> Mono.fromRunnable { swe.response.statusCode = FORBIDDEN }
             }.and().build()
 }

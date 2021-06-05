@@ -2,7 +2,6 @@ package mj.carthy.easysecurity.manager
 
 import mj.carthy.easysecurity.authentication.UserTokenAuthentication
 import mj.carthy.easysecurity.service.JwtAuthenticateTokenService
-import mj.carthy.easyutils.model.UserSecurity
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.core.Authentication
 import reactor.core.publisher.Mono
@@ -14,5 +13,5 @@ class AuthenticationManager(private val jwtAuthenticateTokenService: JwtAuthenti
             authentication.credentials.toString()
     ).switchIfEmpty(Mono.empty()).map(
             jwtAuthenticateTokenService::createUserSecurityFromToken
-    ).map { userSecurity: UserSecurity -> UserTokenAuthentication(userSecurity, authentication.credentials.toString()) }
+    ).map { UserTokenAuthentication(it, authentication.credentials.toString()) }
 }

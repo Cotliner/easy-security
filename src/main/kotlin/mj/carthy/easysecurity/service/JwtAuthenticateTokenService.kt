@@ -4,9 +4,10 @@ import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.SignatureAlgorithm.HS512
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easyutils.enums.Sexe
+import mj.carthy.easyutils.helper.toMutableSet
 import mj.carthy.easyutils.model.Token
 import mj.carthy.easyutils.model.UserSecurity
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -14,7 +15,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.time.temporal.ChronoUnit
+import java.time.temporal.ChronoUnit.MINUTES
 import java.util.*
 import java.util.stream.Collectors
 
@@ -42,16 +43,15 @@ import java.util.stream.Collectors
         val credentialsNonExpired: Boolean = body.get(CREDENTIALS_NON_EXPIRED, Object::class.java).toString().toBoolean()
         val enable: Boolean = body.get(ENABLE, Object::class.java).toString().toBoolean()
         val roles: MutableSet<*> = body.get(ROLES, MutableList::class.java).toMutableSet()
-        val authorities: MutableSet<GrantedAuthority> = roles.stream().map { elem -> elem as String
-        }.map { elem -> SimpleGrantedAuthority(elem) }.collect(Collectors.toSet())
+        val authorities: MutableSet<GrantedAuthority> = roles.stream().map { it as String }.map { SimpleGrantedAuthority(it) }.collect(Collectors.toSet())
         return UserSecurity(id, sexe, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun createToken(id: UUID, user: UserSecurity): Token {
-        val roles = user.authorities.stream().map { elem: GrantedAuthority -> elem.authority }.collect(Collectors.toSet())
+        val roles = user.authorities.stream().map { it.authority }.toMutableSet()
         val expiryTime = Instant.now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
 
-        val token: String = Jwts.builder().signWith(SignatureAlgorithm.HS512, jwtSecurityProperties.signingKey)
+        val token: String = Jwts.builder().signWith(HS512, jwtSecurityProperties.signingKey)
                 .setClaims(getClaims(id, user, roles))
                 .setSubject(id.toString())
                 .setIssuedAt(Date.from(Instant.now()))
@@ -71,7 +71,7 @@ import java.util.stream.Collectors
         claims[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked
         claims[CREDENTIALS_NON_EXPIRED] = user.isCredentialsNonExpired
         claims[ENABLE] = user.isEnabled
-        claims[TOKEN_CREATE_TIME] = Instant.now().truncatedTo(ChronoUnit.MINUTES).toString()
+        claims[TOKEN_CREATE_TIME] = Instant.now().truncatedTo(MINUTES).toString()
         return claims
     }
 }

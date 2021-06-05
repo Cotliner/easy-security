@@ -12,16 +12,14 @@ import reactor.core.publisher.Mono
 
 class SecurityContextRepository(private val authenticationManager: AuthenticationManager): ServerSecurityContextRepository {
 
-    override fun save(severWebExchange: ServerWebExchange, securityContext: SecurityContext): Mono<Void> {
-        TODO("Not yet implemented")
-    }
+    override fun save(severWebExchange: ServerWebExchange, securityContext: SecurityContext) = throw NotImplementedError()
 
     override fun load(
             serverWebExchange: ServerWebExchange
     ): Mono<SecurityContext> = Mono.justOrEmpty(serverWebExchange.extract(
             AUTHORIZATION
-    )).switchIfEmpty(Mono.empty()).map { token -> UsernamePasswordAuthenticationToken(
+    )).switchIfEmpty(Mono.empty()).map { UsernamePasswordAuthenticationToken(
             null,
-            token
-    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map { elem ->  SecurityContextImpl(elem) } }
+            it
+    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map { SecurityContextImpl(it) } }
 }

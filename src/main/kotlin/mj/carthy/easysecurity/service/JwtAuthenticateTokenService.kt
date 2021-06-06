@@ -6,7 +6,7 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
-import mj.carthy.easyutils.enums.Sexe
+import mj.carthy.easyutils.enums.Sex
 import mj.carthy.easyutils.helper.toMutableSet
 import mj.carthy.easyutils.model.Token
 import mj.carthy.easyutils.model.UserSecurity
@@ -23,7 +23,7 @@ import java.util.stream.Collectors
     companion object {
         const val ID = "id"
         const val USERNAME = "username"
-        const val SEXE = "sexe"
+        const val SEX = "sex"
         const val ACCOUNT_NON_EXPIRED = "accountNonExpired"
         const val ACCOUNT_NON_LOCKED = "accountNonLocked"
         const val CREDENTIALS_NON_EXPIRED = "credentialsNonExpired"
@@ -37,14 +37,14 @@ import java.util.stream.Collectors
         val body: Claims = claimsJws.body
         val id = UUID.fromString(body.subject)
         val username: String = body.get(USERNAME, String::class.java)
-        val sexe: Sexe = Sexe.valueOf(body.get(SEXE, String::class.java))
+        val sex: Sex = Sex.valueOf(body.get(SEX, String::class.java))
         val accountNonExpired: Boolean = body.get(ACCOUNT_NON_EXPIRED, Object::class.java).toString().toBoolean()
         val accountNonLocked: Boolean = body.get(ACCOUNT_NON_LOCKED, Object::class.java).toString().toBoolean()
         val credentialsNonExpired: Boolean = body.get(CREDENTIALS_NON_EXPIRED, Object::class.java).toString().toBoolean()
         val enable: Boolean = body.get(ENABLE, Object::class.java).toString().toBoolean()
         val roles: MutableSet<*> = body.get(ROLES, MutableList::class.java).toMutableSet()
         val authorities: MutableSet<GrantedAuthority> = roles.stream().map { it as String }.map { SimpleGrantedAuthority(it) }.collect(Collectors.toSet())
-        return UserSecurity(id, sexe, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
+        return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun createToken(id: UUID, user: UserSecurity): Token {
@@ -65,7 +65,7 @@ import java.util.stream.Collectors
         val claims: MutableMap<String, Any> = HashMap()
         claims[ID] = id
         claims[USERNAME] = user.username
-        claims[SEXE] = user.sexe
+        claims[SEX] = user.sex
         claims[ROLES] = roles
         claims[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
         claims[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked

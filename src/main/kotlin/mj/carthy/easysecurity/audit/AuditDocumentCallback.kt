@@ -25,7 +25,7 @@ class AuditDocumentCallback : ReactiveBeforeConvertCallback<BaseDocument<UUID?>>
     val now = Instant.now()
     val username = username()
 
-    if (document.id != null) setCreated(document, username, now)
+    if (document.id == null) setCreated(document, username, now)
 
     setLastModifiedDate(document, username, now)
 

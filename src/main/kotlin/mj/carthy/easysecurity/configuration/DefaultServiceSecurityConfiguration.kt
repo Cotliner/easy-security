@@ -28,8 +28,11 @@ class DefaultServiceSecurityConfiguration @Autowired constructor(
             http: ServerHttpSecurity
     ): SecurityWebFilterChain = super.securityWebFilterChain(http.authenticationManager(
             authenticationManager()
-    ).securityContextRepository(securityContextRepository()).authorizeExchange()
-            .pathMatchers("/api/mocks/**").permitAll()
-            .pathMatchers("/api/**").authenticated()
-            .anyExchange().authenticated().and())
+    ).securityContextRepository(
+      securityContextRepository()
+    ).authorizeExchange().pathMatchers(
+      "/api/mocks/**"
+    ).permitAll().pathMatchers(
+      "/api/**"
+    ).authenticated().anyExchange().authenticated().and())
 }

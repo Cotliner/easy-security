@@ -15,11 +15,11 @@ class SecurityContextRepository(private val authenticationManager: Authenticatio
     override fun save(severWebExchange: ServerWebExchange, securityContext: SecurityContext) = throw NotImplementedError()
 
     override fun load(
-            serverWebExchange: ServerWebExchange
+      serverWebExchange: ServerWebExchange
     ): Mono<SecurityContext> = Mono.justOrEmpty(serverWebExchange.extract(
-            AUTHORIZATION
+      AUTHORIZATION
     )).switchIfEmpty(Mono.empty()).map { UsernamePasswordAuthenticationToken(
-            null,
-            it
-    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map { SecurityContextImpl(it) } }
+      null,
+      it
+    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map {SecurityContextImpl(it) } }
 }

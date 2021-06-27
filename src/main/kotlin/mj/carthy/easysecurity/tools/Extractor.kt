@@ -3,7 +3,6 @@ package mj.carthy.easysecurity.tools
 import com.google.common.annotations.VisibleForTesting
 import org.apache.commons.lang3.math.NumberUtils
 import org.springframework.web.server.ServerWebExchange
-import java.util.*
 import java.util.function.Function
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -20,11 +19,9 @@ private val GET_FIRST_GROUP = Function { matcher: Matcher -> matcher.group(Numbe
 
 @VisibleForTesting fun ServerWebExchange.extract(header: String): String? = parse(this.request.headers.getFirst(header))
 
-@VisibleForTesting fun parse(
-        input: String?
-): String? = when (input) {
-    null -> null
-    else -> Optional.of(CHALLENGE_PATTERN.matcher(input)).filter { obj: Matcher -> obj.matches() }.map<String>(
-            GET_FIRST_GROUP
-    ).orElseThrow<IllegalArgumentException> { IllegalArgumentException(String.format(NOT_MATCH, input)) }
+@VisibleForTesting fun parse(input: String?): String? {
+  if (input == null) return null
+  val matcher: Matcher = CHALLENGE_PATTERN.matcher(input)
+  if (!matcher.matches()) throw IllegalArgumentException(String.format(NOT_MATCH, input))
+  return GET_FIRST_GROUP.apply(matcher)
 }

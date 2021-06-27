@@ -7,7 +7,6 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easyutils.enums.Sex
-import mj.carthy.easyutils.helper.toMutableSet
 import mj.carthy.easyutils.model.Token
 import mj.carthy.easyutils.model.UserSecurity
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 import java.util.*
-import java.util.stream.Collectors
 
 @Service class JwtAuthenticateTokenService(val jwtSecurityProperties: JwtSecurityProperties) {
     companion object {
@@ -43,12 +41,12 @@ import java.util.stream.Collectors
         val credentialsNonExpired: Boolean = body.get(CREDENTIALS_NON_EXPIRED, Object::class.java).toString().toBoolean()
         val enable: Boolean = body.get(ENABLE, Object::class.java).toString().toBoolean()
         val roles: MutableSet<*> = body.get(ROLES, MutableList::class.java).toMutableSet()
-        val authorities: MutableSet<GrantedAuthority> = roles.stream().map { it as String }.map { SimpleGrantedAuthority(it) }.collect(Collectors.toSet())
+        val authorities: MutableSet<GrantedAuthority> = roles.map { it as String }.map { SimpleGrantedAuthority(it) }.toMutableSet()
         return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun createToken(id: UUID, user: UserSecurity): Token {
-        val roles = user.authorities.stream().map { it.authority }.toMutableSet()
+        val roles = user.authorities.map { it.authority }.toSet()
         val expiryTime = Instant.now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
 
         val token: String = Jwts.builder().signWith(HS512, jwtSecurityProperties.signingKey)
@@ -61,7 +59,7 @@ import java.util.stream.Collectors
         return Token(token, expiryTime)
     }
 
-    @VisibleForTesting fun getClaims(id: UUID, user: UserSecurity, roles: MutableSet<String>): Map<String, Any> {
+    @VisibleForTesting fun getClaims(id: UUID, user: UserSecurity, roles: Set<String>): Map<String, Any> {
         val claims: MutableMap<String, Any> = HashMap()
         claims[ID] = id
         claims[USERNAME] = user.username

@@ -12,12 +12,10 @@ import reactor.core.publisher.Mono
 
 open class BaseSecurityConfiguration {
     @Bean open fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain = http
-            .csrf().disable().formLogin().disable().httpBasic().disable()
-            .exceptionHandling().authenticationEntryPoint {
-                swe: ServerWebExchange,
-                _: AuthenticationException -> Mono.fromRunnable { swe.response.statusCode = UNAUTHORIZED }
-            }.accessDeniedHandler {
-                swe: ServerWebExchange,
-                _: AccessDeniedException -> Mono.fromRunnable { swe.response.statusCode = FORBIDDEN }
-            }.and().build()
+      .csrf().disable().formLogin().disable().httpBasic().disable()
+      .exceptionHandling().authenticationEntryPoint {
+          swe: ServerWebExchange, _: AuthenticationException -> Mono.fromRunnable { swe.response.statusCode = UNAUTHORIZED }
+      }.accessDeniedHandler {
+          swe: ServerWebExchange, _: AccessDeniedException -> Mono.fromRunnable { swe.response.statusCode = FORBIDDEN }
+      }.and().build()
 }

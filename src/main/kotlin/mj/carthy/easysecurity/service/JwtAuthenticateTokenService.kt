@@ -1,19 +1,18 @@
 package mj.carthy.easysecurity.service
 
 import com.google.common.annotations.VisibleForTesting
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easyutils.enums.Sex
+import mj.carthy.easyutils.helper.string
 import mj.carthy.easyutils.model.Token
 import mj.carthy.easyutils.model.UserSecurity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
-import java.time.Instant
+import java.time.Instant.now
 import java.time.temporal.ChronoUnit.MINUTES
 import java.util.*
 
@@ -30,46 +29,49 @@ import java.util.*
         const val ROLES = "roles"
     }
 
-    fun createUserSecurityFromToken(token: String): UserSecurity {
-        val claimsJws: Jws<Claims> = Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token)
-        val body: Claims = claimsJws.body
-        val id = UUID.fromString(body.subject)
-        val username: String = body.get(USERNAME, String::class.java)
-        val sex: Sex = Sex.valueOf(body.get(SEX, String::class.java))
-        val accountNonExpired: Boolean = body.get(ACCOUNT_NON_EXPIRED, Object::class.java).toString().toBoolean()
-        val accountNonLocked: Boolean = body.get(ACCOUNT_NON_LOCKED, Object::class.java).toString().toBoolean()
-        val credentialsNonExpired: Boolean = body.get(CREDENTIALS_NON_EXPIRED, Object::class.java).toString().toBoolean()
-        val enable: Boolean = body.get(ENABLE, Object::class.java).toString().toBoolean()
-        val roles: MutableSet<*> = body.get(ROLES, MutableList::class.java).toMutableSet()
+    fun createUserSecurityFromToken(
+        token: String
+    ): UserSecurity = with(Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body) {
+        val id = UUID.fromString(this.subject)
+        val username: String = this.get(USERNAME, String::class.java)
+        val sex: Sex = Sex.valueOf(this.get(SEX, String::class.java))
+        val accountNonExpired: Boolean = this.get(ACCOUNT_NON_EXPIRED, Object::class.java).string.toBoolean()
+        val accountNonLocked: Boolean = this.get(ACCOUNT_NON_LOCKED, Object::class.java).string.toBoolean()
+        val credentialsNonExpired: Boolean = this.get(CREDENTIALS_NON_EXPIRED, Object::class.java).string.toBoolean()
+        val enable: Boolean = this.get(ENABLE, Object::class.java).string.toBoolean()
+        val roles: MutableSet<*> = this.get(ROLES, MutableList::class.java).toMutableSet()
         val authorities: MutableSet<GrantedAuthority> = roles.map { it as String }.map { SimpleGrantedAuthority(it) }.toMutableSet()
         return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun createToken(id: UUID, user: UserSecurity): Token {
         val roles = user.authorities.map { it.authority }.toSet()
-        val expiryTime = Instant.now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
+        val expiryTime = now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
 
         val token: String = Jwts.builder().signWith(HS512, jwtSecurityProperties.signingKey)
                 .setClaims(getClaims(id, user, roles))
-                .setSubject(id.toString())
-                .setIssuedAt(Date.from(Instant.now()))
+                .setSubject(id.string)
+                .setIssuedAt(Date.from(now()))
                 .setExpiration(Date.from(expiryTime))
                 .compact()
 
         return Token(token, expiryTime)
     }
 
-    @VisibleForTesting fun getClaims(id: UUID, user: UserSecurity, roles: Set<String>): Map<String, Any> {
-        val claims: MutableMap<String, Any> = HashMap()
-        claims[ID] = id
-        claims[USERNAME] = user.username
-        claims[SEX] = user.sex
-        claims[ROLES] = roles
-        claims[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
-        claims[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked
-        claims[CREDENTIALS_NON_EXPIRED] = user.isCredentialsNonExpired
-        claims[ENABLE] = user.isEnabled
-        claims[TOKEN_CREATE_TIME] = Instant.now().truncatedTo(MINUTES).toString()
-        return claims
+    @VisibleForTesting fun getClaims(
+        id: UUID,
+        user: UserSecurity,
+        roles: Set<String>
+    ): Map<String, Any> = with(HashMap<String, Any>()) {
+        this[ID] = id
+        this[USERNAME] = user.username
+        this[SEX] = user.sex
+        this[ROLES] = roles
+        this[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
+        this[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked
+        this[CREDENTIALS_NON_EXPIRED] = user.isCredentialsNonExpired
+        this[ENABLE] = user.isEnabled
+        this[TOKEN_CREATE_TIME] = now().truncatedTo(MINUTES).string
+        return this
     }
 }

@@ -43,11 +43,11 @@ import java.util.*
     ): UserSecurity = with(
         Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body
     ) {
-        val id = UUID.fromString(this.subject)
         val tokenId: UUID = UUID.fromString(this.get(TOKEN_ID, String::class.java))
 
         if (sessionGetter != null) if (sessionGetter(tokenId).awaitSingleOrNull() != null) throw AccessDeniedException(EXCLUDED_SESSION)
 
+        val id = UUID.fromString(this.subject)
         val username: String = this.get(USERNAME, String::class.java)
         val sex: Sex = Sex.valueOf(this.get(SEX, String::class.java))
         val accountNonExpired: Boolean = this.get(ACCOUNT_NON_EXPIRED, Object::class.java).string.toBoolean()

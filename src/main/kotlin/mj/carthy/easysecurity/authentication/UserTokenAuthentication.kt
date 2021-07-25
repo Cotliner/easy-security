@@ -1,11 +1,11 @@
 package mj.carthy.easysecurity.authentication
 
-import mj.carthy.easyutils.model.UserSecurity
+import mj.carthy.easysecurity.model.UserSecurity
 import org.springframework.security.authentication.AbstractAuthenticationToken
 
 class UserTokenAuthentication(
-        private val userSecurity: UserSecurity,
-        private val token: String
+    private val userSecurity: UserSecurity,
+    private val token: String
 ) : AbstractAuthenticationToken(userSecurity.authorities) {
     override fun getCredentials(): String = token
     override fun getPrincipal(): UserSecurity = userSecurity

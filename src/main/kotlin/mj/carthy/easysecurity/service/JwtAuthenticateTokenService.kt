@@ -3,21 +3,30 @@ package mj.carthy.easysecurity.service
 import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
+import mj.carthy.easysecurity.model.Token
+import mj.carthy.easysecurity.model.UserSecurity
 import mj.carthy.easyutils.enums.Sex
 import mj.carthy.easyutils.helper.string
-import mj.carthy.easyutils.model.Token
-import mj.carthy.easyutils.model.UserSecurity
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 import java.time.Instant.now
-import java.time.temporal.ChronoUnit.MINUTES
 import java.util.*
 
-@Service class JwtAuthenticateTokenService(val jwtSecurityProperties: JwtSecurityProperties) {
+@Service class JwtAuthenticateTokenService(
+    /* PROPERTIES */
+    val jwtSecurityProperties: JwtSecurityProperties
+) {
     companion object {
+        /* ERRORS */
+        const val EXCLUDED_SESSION = "Excluded session"
+        /* PARAMS */
+        const val TOKEN_ID = "TOKEN_ID"
         const val ID = "id"
         const val USERNAME = "username"
         const val SEX = "sex"
@@ -25,14 +34,20 @@ import java.util.*
         const val ACCOUNT_NON_LOCKED = "accountNonLocked"
         const val CREDENTIALS_NON_EXPIRED = "credentialsNonExpired"
         const val ENABLE = "enable"
-        const val TOKEN_CREATE_TIME = "TOKEN_CREATE_TIME"
         const val ROLES = "roles"
     }
 
-    fun createUserSecurityFromToken(
-        token: String
-    ): UserSecurity = with(Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body) {
+    suspend fun createUserSecurityFromToken(
+        token: String,
+        sessionGetter: (suspend (sessionId: UUID) -> Mono<out Any>)? = null
+    ): UserSecurity = with(
+        Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body
+    ) {
         val id = UUID.fromString(this.subject)
+        val tokenId: UUID = UUID.fromString(this.get(TOKEN_ID, String::class.java))
+
+        if (sessionGetter != null) if (sessionGetter(tokenId).awaitSingleOrNull() != null) throw AccessDeniedException(EXCLUDED_SESSION)
+
         val username: String = this.get(USERNAME, String::class.java)
         val sex: Sex = Sex.valueOf(this.get(SEX, String::class.java))
         val accountNonExpired: Boolean = this.get(ACCOUNT_NON_EXPIRED, Object::class.java).string.toBoolean()
@@ -41,21 +56,26 @@ import java.util.*
         val enable: Boolean = this.get(ENABLE, Object::class.java).string.toBoolean()
         val roles: MutableSet<*> = this.get(ROLES, MutableList::class.java).toMutableSet()
         val authorities: MutableSet<GrantedAuthority> = roles.map { it as String }.map { SimpleGrantedAuthority(it) }.toMutableSet()
+
         return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun createToken(id: UUID, user: UserSecurity): Token {
         val roles = user.authorities.map { it.authority }.toSet()
         val expiryTime = now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
-
-        val token: String = Jwts.builder().signWith(HS512, jwtSecurityProperties.signingKey)
-                .setClaims(getClaims(id, user, roles))
-                .setSubject(id.string)
-                .setIssuedAt(Date.from(now()))
-                .setExpiration(Date.from(expiryTime))
-                .compact()
-
-        return Token(token, expiryTime)
+        return Token(Jwts.builder().signWith(
+            HS512,
+            jwtSecurityProperties.signingKey
+        ).setClaims(getClaims(id,
+            user,
+            roles
+        )).setSubject(
+            id.string
+        ).setIssuedAt(Date.from(
+            now()
+        )).setExpiration(Date.from(
+            expiryTime
+        )).compact(), expiryTime)
     }
 
     @VisibleForTesting fun getClaims(
@@ -63,6 +83,7 @@ import java.util.*
         user: UserSecurity,
         roles: Set<String>
     ): Map<String, Any> = with(HashMap<String, Any>()) {
+        this[TOKEN_ID] = UUID.randomUUID()
         this[ID] = id
         this[USERNAME] = user.username
         this[SEX] = user.sex
@@ -71,7 +92,6 @@ import java.util.*
         this[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked
         this[CREDENTIALS_NON_EXPIRED] = user.isCredentialsNonExpired
         this[ENABLE] = user.isEnabled
-        this[TOKEN_CREATE_TIME] = now().truncatedTo(MINUTES).string
         return this
     }
 }

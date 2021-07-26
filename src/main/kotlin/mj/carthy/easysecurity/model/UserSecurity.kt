@@ -17,7 +17,7 @@ data class UserSecurity(
   private val enabled: Boolean = false
 ) : UserDetails {
     override fun getUsername(): String = username
-    override fun getPassword(): String = password;
+    override fun getPassword(): String = password
     override fun isAccountNonExpired(): Boolean = accountNonExpired
     override fun isAccountNonLocked(): Boolean = accountNonLocked
     override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired

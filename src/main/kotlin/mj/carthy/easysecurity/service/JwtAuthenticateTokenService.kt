@@ -3,30 +3,34 @@ package mj.carthy.easysecurity.service
 import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
-import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import mj.carthy.easysecurity.document.Exclude
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easysecurity.model.Token
 import mj.carthy.easysecurity.model.UserSecurity
 import mj.carthy.easyutils.enums.Sex
 import mj.carthy.easyutils.helper.string
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 import java.time.Instant.now
 import java.util.*
 
-@Service class JwtAuthenticateTokenService(
+class JwtAuthenticateTokenService(
     /* PROPERTIES */
-    val jwtSecurityProperties: JwtSecurityProperties
+    private val jwtSecurityProperties: JwtSecurityProperties,
+    /* REPOSITORIES */
+    private val mongoTemplate: ReactiveMongoTemplate
 ) {
     companion object {
         /* ERRORS */
         const val EXCLUDED_SESSION = "Excluded session"
         /* PARAMS */
-        const val TOKEN_ID = "TOKEN_ID"
+        const val SESSION_ID = "SESSION_ID"
         const val ID = "id"
         const val USERNAME = "username"
         const val SEX = "sex"
@@ -35,17 +39,20 @@ import java.util.*
         const val CREDENTIALS_NON_EXPIRED = "credentialsNonExpired"
         const val ENABLE = "enable"
         const val ROLES = "roles"
+        /* QUERIES PARAM */
+        const val MAPPED_ID_PARAM = "mappedId"
     }
 
     suspend fun createUserSecurityFromToken(
-        token: String,
-        sessionGetter: (suspend (sessionId: UUID) -> Mono<out Any>)? = null
+        token: String
     ): UserSecurity = with(
         Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body
     ) {
-        val tokenId: UUID = UUID.fromString(this.get(TOKEN_ID, String::class.java))
+        val sessionId: UUID = UUID.fromString(this.get(SESSION_ID, String::class.java))
 
-        if (sessionGetter != null) if (sessionGetter(tokenId).awaitSingleOrNull() != null) throw AccessDeniedException(EXCLUDED_SESSION)
+        val query = Query().addCriteria(Criteria.where(MAPPED_ID_PARAM).`is`(sessionId))
+
+        if (mongoTemplate.find(query, Exclude::class.java).awaitFirstOrNull() != null) throw AccessDeniedException(EXCLUDED_SESSION)
 
         val id = UUID.fromString(this.subject)
         val username: String = this.get(USERNAME, String::class.java)
@@ -83,7 +90,7 @@ import java.util.*
         user: UserSecurity,
         roles: Set<String>
     ): Map<String, Any> = with(HashMap<String, Any>()) {
-        this[TOKEN_ID] = UUID.randomUUID()
+        this[SESSION_ID] = UUID.randomUUID()
         this[ID] = id
         this[USERNAME] = user.username
         this[SEX] = user.sex

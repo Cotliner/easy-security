@@ -21,5 +21,5 @@ class SecurityContextRepository(private val authenticationManager: Authenticatio
     )).switchIfEmpty(Mono.empty()).map { UsernamePasswordAuthenticationToken(
       null,
       it
-    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map {SecurityContextImpl(it) } }
+    ) }.flatMap { auth -> authenticationManager.authenticate(auth).map { SecurityContextImpl(it) } }
 }

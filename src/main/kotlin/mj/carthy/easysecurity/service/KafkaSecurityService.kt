@@ -9,13 +9,13 @@ import mj.carthy.easysecurity.document.Exclude
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.kafka.annotation.KafkaListener
 
-class KafkaConsumerService(
+class KafkaSecurityService(
   /* CLIENTS */
   private val objectMapper: ObjectMapper,
   /* REPOSITORIES */
   private val mongoTemplate: ReactiveMongoTemplate,
 ) {
   @DelicateCoroutinesApi
-  @KafkaListener(topics = ["session"], groupId = "group_id")
+  @KafkaListener(topics = ["#{@kafkaSecurityTopic}"], groupId = "#{@kafkaSecurityGroupId}")
   fun consume(session: String) { GlobalScope.launch { mongoTemplate.save(objectMapper.readValue(session, Exclude::class.java)).awaitSingle() } }
 }

@@ -27,8 +27,6 @@ class JwtAuthenticateTokenService(
     private val mongoTemplate: ReactiveMongoTemplate
 ) {
     companion object {
-        /* ERRORS */
-        const val EXCLUDED_SESSION = "Excluded session"
         /* PARAMS */
         const val SESSION_ID = "sessionId"
         const val ID = "id"

@@ -30,7 +30,7 @@ class JwtAuthenticateTokenService(
         /* ERRORS */
         const val EXCLUDED_SESSION = "Excluded session"
         /* PARAMS */
-        const val SESSION_ID = "SESSION_ID"
+        const val SESSION_ID = "sessionId"
         const val ID = "id"
         const val USERNAME = "username"
         const val SEX = "sex"
@@ -45,14 +45,14 @@ class JwtAuthenticateTokenService(
 
     suspend fun createUserSecurityFromToken(
         token: String
-    ): UserSecurity = with(
+    ): UserSecurity? = with(
         Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body
     ) {
         val sessionId: UUID = UUID.fromString(this.get(SESSION_ID, String::class.java))
 
         val query = Query().addCriteria(Criteria.where(MAPPED_ID_PARAM).`is`(sessionId))
 
-        if (mongoTemplate.find(query, Exclude::class.java).awaitFirstOrNull() != null) throw AccessDeniedException(EXCLUDED_SESSION)
+        if (mongoTemplate.find(query, Exclude::class.java).awaitFirstOrNull() != null) return null
 
         val id = UUID.fromString(this.subject)
         val username: String = this.get(USERNAME, String::class.java)

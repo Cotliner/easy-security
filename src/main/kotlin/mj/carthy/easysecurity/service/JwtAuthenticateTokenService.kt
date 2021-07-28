@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Instant.now
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class JwtAuthenticateTokenService(
@@ -65,9 +66,10 @@ class JwtAuthenticateTokenService(
         return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
-    fun createToken(id: UUID, user: UserSecurity): Token {
+    fun createToken(user: UserSecurity, validity: Long = jwtSecurityProperties.validity, unit: ChronoUnit = jwtSecurityProperties.unit): Token {
+        val id: UUID = user.id
         val roles = user.authorities.map { it.authority }.toSet()
-        val expiryTime = now().plus(jwtSecurityProperties.validity, jwtSecurityProperties.unit)
+        val expiryTime = now().plus(validity, unit)
         return Token(Jwts.builder().signWith(
             HS512,
             jwtSecurityProperties.signingKey

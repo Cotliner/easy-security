@@ -3,7 +3,7 @@ package mj.carthy.easysecurity.audit
 import com.google.common.annotations.VisibleForTesting
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.mono
-import mj.carthy.easysecurity.authentication.UserTokenAuthentication
+import mj.carthy.easysecurity.authentication.UserTokenAuth
 import mj.carthy.easyutils.document.BaseDocument
 import org.reactivestreams.Publisher
 import org.springframework.data.mongodb.core.mapping.event.ReactiveBeforeConvertCallback
@@ -56,7 +56,7 @@ class AuditDocumentCallback : ReactiveBeforeConvertCallback<BaseDocument<UUID?>>
   }.switchIfEmpty(Mono.just(SYSTEM)).awaitSingle()
 
   @VisibleForTesting fun getCurrentAuditor(auth: SecurityContext): String = when (auth.authentication) {
-    is UserTokenAuthentication -> when (auth.authentication.principal) {
+    is UserTokenAuth -> when (auth.authentication.principal) {
       is UserDetails -> (auth.authentication.principal as UserDetails).username
       is String -> auth.authentication.principal as String
       else -> SYSTEM

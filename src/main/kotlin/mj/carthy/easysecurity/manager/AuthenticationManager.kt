@@ -1,7 +1,7 @@
 package mj.carthy.easysecurity.manager
 
 import kotlinx.coroutines.reactor.mono
-import mj.carthy.easysecurity.authentication.UserTokenAuthentication
+import mj.carthy.easysecurity.authentication.UserTokenAuth
 import mj.carthy.easysecurity.service.JwtAuthenticateTokenService
 import mj.carthy.easyutils.helper.string
 import org.springframework.security.authentication.ReactiveAuthenticationManager
@@ -15,11 +15,11 @@ class AuthenticationManager(
     authentication: Authentication
   ): Mono<Authentication> = Mono.justOrEmpty(
     authentication.credentials.string
-  ).switchIfEmpty(Mono.empty()).map { mono { jwtAuthenticateTokenService.createUserSecurityFromToken(
+  ).switchIfEmpty(Mono.empty()).map { mono { jwtAuthenticateTokenService.tokenToUserAuth(
     it,
   ) } }.flatMap {
     it
-  }.map { UserTokenAuthentication(
+  }.map { UserTokenAuth(
     it,
     authentication.credentials.string
   ) }

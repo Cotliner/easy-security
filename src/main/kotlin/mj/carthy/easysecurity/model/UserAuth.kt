@@ -5,7 +5,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 
-data class UserSecurity(
+data class UserAuth(
   val id: UUID,
   val sex: Sex,
   private val username: String,

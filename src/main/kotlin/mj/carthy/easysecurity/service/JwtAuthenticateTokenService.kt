@@ -7,14 +7,13 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mj.carthy.easysecurity.document.Exclude
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easysecurity.model.Token
-import mj.carthy.easysecurity.model.UserSecurity
+import mj.carthy.easysecurity.model.UserAuth
 import mj.carthy.easyutils.enums.Sex
 import mj.carthy.easyutils.helper.string
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Instant.now
@@ -42,9 +41,7 @@ class JwtAuthenticateTokenService(
         const val MAPPED_ID_PARAM = "mappedId"
     }
 
-    suspend fun createUserSecurityFromToken(
-        token: String
-    ): UserSecurity? = with(
+    suspend fun tokenToUserAuth(token: String): UserAuth? = with(
         Jwts.parser().setSigningKey(jwtSecurityProperties.signingKey).parseClaimsJws(token).body
     ) {
         val sessionId: UUID = UUID.fromString(this.get(SESSION_ID, String::class.java))
@@ -63,10 +60,10 @@ class JwtAuthenticateTokenService(
         val roles: MutableSet<*> = this.get(ROLES, MutableList::class.java).toMutableSet()
         val authorities: MutableSet<GrantedAuthority> = roles.map { it as String }.map { SimpleGrantedAuthority(it) }.toMutableSet()
 
-        return UserSecurity(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
+        return UserAuth(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
-    fun createToken(user: UserSecurity, validity: Long = jwtSecurityProperties.validity, unit: ChronoUnit = jwtSecurityProperties.unit): Token {
+    fun tokenCreator(user: UserAuth, validity: Long = jwtSecurityProperties.validity, unit: ChronoUnit = jwtSecurityProperties.unit): Token {
         val id: UUID = user.id
         val roles = user.authorities.map { it.authority }.toSet()
         val expiryTime = now().plus(validity, unit)
@@ -87,7 +84,7 @@ class JwtAuthenticateTokenService(
 
     @VisibleForTesting fun getClaims(
         id: UUID,
-        user: UserSecurity,
+        user: UserAuth,
         roles: Set<String>
     ): Map<String, Any> = with(HashMap<String, Any>()) {
         this[SESSION_ID] = UUID.randomUUID()

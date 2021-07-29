@@ -5,7 +5,7 @@ import mj.carthy.easyutils.enums.Sex.MALE
 import org.springframework.security.test.context.support.WithSecurityContext
 
 @Retention(AnnotationRetention.RUNTIME)
-@WithSecurityContext(factory = UserSecurityMockFactory::class)
+@WithSecurityContext(factory = UserAuthMockFactory::class)
 annotation class MockedUser(
         val id: String = "24aa766d-2a2f-4649-b870-b88cca33bd76",
         val username: String = "john.doe@yopmail.com",

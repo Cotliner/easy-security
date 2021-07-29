@@ -25,7 +25,6 @@ class UserAuthMockFactory: WithSecurityContextFactory<MockedUser> {
     UUID.fromString(customUser.id),
     customUser.sex,
     customUser.username,
-    customUser.password,
     mutableSetOf(SimpleGrantedAuthority(customUser.role)),
     customUser.accountNonExpired,
     customUser.accountNonLocked,

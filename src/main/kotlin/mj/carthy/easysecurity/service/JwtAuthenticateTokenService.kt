@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mj.carthy.easysecurity.document.Exclude
+import mj.carthy.easysecurity.enums.Sex.UNKNOWN
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easysecurity.model.Token
 import mj.carthy.easysecurity.model.UserAuth
@@ -60,7 +61,7 @@ class JwtAuthenticateTokenService(
         val roles: MutableSet<*> = this.get(ROLES, MutableList::class.java).toMutableSet()
         val authorities: MutableSet<GrantedAuthority> = roles.map { it as String }.map { SimpleGrantedAuthority(it) }.toMutableSet()
 
-        return UserAuth(id, sex, username, EMPTY, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
+        return UserAuth(id, sex, username, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
     }
 
     fun tokenCreator(user: UserAuth, validity: Long = jwtSecurityProperties.validity, unit: ChronoUnit = jwtSecurityProperties.unit): Token {
@@ -90,7 +91,7 @@ class JwtAuthenticateTokenService(
         this[SESSION_ID] = UUID.randomUUID()
         this[ID] = id
         this[USERNAME] = user.username
-        this[SEX] = user.sex
+        this[SEX] = user.sex ?: UNKNOWN
         this[ROLES] = roles
         this[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
         this[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked

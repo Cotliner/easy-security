@@ -1,6 +1,7 @@
 package mj.carthy.easysecurity.model
 
-import mj.carthy.easyutils.enums.Sex
+import mj.carthy.easysecurity.enums.Sex
+import mj.carthy.easysecurity.enums.Sex.UNKNOWN
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -8,13 +9,13 @@ import java.util.*
 
 data class UserAuth(
   val id: UUID,
-  val sex: Sex?,
+  val sex: Sex = UNKNOWN,
   private val username: String,
   private val authorities: MutableSet<out GrantedAuthority> = HashSet(),
   private val accountNonExpired: Boolean = false,
   private val accountNonLocked: Boolean = false,
   private val credentialsNonExpired: Boolean = false,
-  private val enabled: Boolean = false
+  private val enabled: Boolean = false,
 ) : UserDetails {
     override fun getUsername(): String = username
     override fun getPassword(): String = EMPTY

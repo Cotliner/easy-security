@@ -85,20 +85,17 @@
 			<artifactId>commons-beanutils</artifactId>
 			<version>${commons-beanutils.version}</version>
 		</dependency>
-
-		<!-- personal library -->
+		<!--PERSONAL LIBRARIES-->
 		<dependency>
 			<groupId>mj.carthy</groupId>
 			<artifactId>easy-utils</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
 		<!--TEST-->
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

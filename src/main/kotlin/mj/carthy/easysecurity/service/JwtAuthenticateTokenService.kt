@@ -5,11 +5,11 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mj.carthy.easysecurity.document.Exclude
+import mj.carthy.easysecurity.enums.Sex
 import mj.carthy.easysecurity.enums.Sex.UNKNOWN
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easysecurity.model.Token
 import mj.carthy.easysecurity.model.UserAuth
-import mj.carthy.easyutils.enums.Sex
 import mj.carthy.easyutils.helper.string
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -91,7 +91,7 @@ class JwtAuthenticateTokenService(
         this[SESSION_ID] = UUID.randomUUID()
         this[ID] = id
         this[USERNAME] = user.username
-        this[SEX] = user.sex ?: UNKNOWN
+        this[SEX] = user.sex
         this[ROLES] = roles
         this[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
         this[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked

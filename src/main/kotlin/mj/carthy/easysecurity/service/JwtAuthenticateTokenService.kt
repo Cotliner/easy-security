@@ -4,14 +4,12 @@ import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import mj.carthy.easysecurity.document.Exclude
+import mj.carthy.easysecurity.document.RoboCop
 import mj.carthy.easysecurity.enums.Sex
-import mj.carthy.easysecurity.enums.Sex.UNKNOWN
 import mj.carthy.easysecurity.jwtconfiguration.JwtSecurityProperties
 import mj.carthy.easysecurity.model.Token
 import mj.carthy.easysecurity.model.UserAuth
 import mj.carthy.easyutils.helper.string
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -49,7 +47,7 @@ class JwtAuthenticateTokenService(
 
         val query = Query().addCriteria(Criteria.where(MAPPED_ID_PARAM).`is`(sessionId))
 
-        if (mongoTemplate.find(query, Exclude::class.java).awaitFirstOrNull() != null) return null
+        if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 
         val id = UUID.fromString(this.subject)
         val username: String = this.get(USERNAME, String::class.java)

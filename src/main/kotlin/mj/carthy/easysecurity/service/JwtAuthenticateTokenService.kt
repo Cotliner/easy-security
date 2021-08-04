@@ -65,7 +65,7 @@ class JwtAuthenticateTokenService(
     fun tokenCreator(user: UserAuth, validity: Long = jwtSecurityProperties.validity, unit: ChronoUnit = jwtSecurityProperties.unit): Token {
         val id: UUID = user.id
         val roles = user.authorities.map { it.authority }.toSet()
-        val expiryTime = now().plus(validity, unit)
+        val timeout = now().plus(validity, unit)
         return Token(Jwts.builder().signWith(
             HS512,
             jwtSecurityProperties.signingKey
@@ -77,8 +77,8 @@ class JwtAuthenticateTokenService(
         ).setIssuedAt(Date.from(
             now()
         )).setExpiration(Date.from(
-            expiryTime
-        )).compact(), expiryTime)
+            timeout
+        )).compact(), timeout)
     }
 
     @VisibleForTesting fun getClaims(

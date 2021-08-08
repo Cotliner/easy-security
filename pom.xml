@@ -18,7 +18,7 @@
 		<java.version>11</java.version>
 		<kotlin.version>1.5.21</kotlin.version>
 		<!--LIBRARIES-->
-		<io.jsonwebtoken>0.7.0</io.jsonwebtoken>
+		<io.jsonwebtoken>0.9.1</io.jsonwebtoken>
 		<commons-lang3.version>3.9</commons-lang3.version>
 		<passay.version>1.3.0</passay.version>
 		<com.google.guava>r03</com.google.guava>

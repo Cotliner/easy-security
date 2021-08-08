@@ -2,6 +2,7 @@ package mj.carthy.easysecurity.tools
 
 import com.google.common.annotations.VisibleForTesting
 import org.apache.commons.lang3.math.NumberUtils
+import org.apache.commons.lang3.math.NumberUtils.INTEGER_ONE
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Function
 import java.util.regex.Matcher
@@ -15,7 +16,7 @@ private val CHALLENGE_PATTERN = Pattern.compile(PATTERN, Pattern.CASE_INSENSITIV
 
 private const val NOT_MATCH = "The token is incorrect : %s"
 
-private val GET_FIRST_GROUP = Function { matcher: Matcher -> matcher.group(NumberUtils.INTEGER_ONE) }
+private val GET_FIRST_GROUP = Function { matcher: Matcher -> matcher.group(INTEGER_ONE) }
 
 @VisibleForTesting fun ServerWebExchange.extract(header: String): String? = parse(this.request.headers.getFirst(header))
 

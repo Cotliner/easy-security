@@ -17,11 +17,11 @@ data class UserAuth(
   private val credentialsNonExpired: Boolean = false,
   private val enabled: Boolean = false,
 ) : UserDetails {
-    override fun getUsername(): String = username
-    override fun getPassword(): String = EMPTY
-    override fun isAccountNonExpired(): Boolean = accountNonExpired
-    override fun isAccountNonLocked(): Boolean = accountNonLocked
-    override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired
-    override fun isEnabled(): Boolean = enabled
-    override fun getAuthorities(): MutableCollection<out GrantedAuthority> = authorities
+  override fun getUsername(): String = username
+  override fun getPassword(): String = EMPTY
+  override fun isAccountNonExpired(): Boolean = accountNonExpired
+  override fun isAccountNonLocked(): Boolean = accountNonLocked
+  override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired
+  override fun isEnabled(): Boolean = enabled
+  override fun getAuthorities(): MutableCollection<out GrantedAuthority> = authorities
 }

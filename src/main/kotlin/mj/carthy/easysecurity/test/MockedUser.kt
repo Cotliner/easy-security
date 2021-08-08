@@ -3,6 +3,7 @@ package mj.carthy.easysecurity.test
 import mj.carthy.easysecurity.enums.Sex
 import mj.carthy.easysecurity.enums.Sex.UNKNOWN
 import org.springframework.security.test.context.support.WithSecurityContext
+import java.util.*
 
 @Retention(AnnotationRetention.RUNTIME)
 @WithSecurityContext(factory = UserAuthMockFactory::class)

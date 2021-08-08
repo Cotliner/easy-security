@@ -21,14 +21,14 @@ class UserAuthMockFactory: WithSecurityContextFactory<MockedUser> {
     return context
   }
 
-  private fun createUserAuth(customUser: MockedUser): UserAuth = UserAuth(
-    UUID.fromString(customUser.id),
-    customUser.sex,
-    customUser.username,
-    mutableSetOf(SimpleGrantedAuthority(customUser.role)),
-    customUser.accountNonExpired,
-    customUser.accountNonLocked,
-    customUser.credentialsNonExpired,
-    customUser.enabled
+  private fun createUserAuth(user: MockedUser): UserAuth = UserAuth(
+    UUID.fromString(user.id),
+    user.sex,
+    user.username,
+    mutableSetOf(SimpleGrantedAuthority(user.role)),
+    user.accountNonExpired,
+    user.accountNonLocked,
+    user.credentialsNonExpired,
+    user.enabled
   )
 }

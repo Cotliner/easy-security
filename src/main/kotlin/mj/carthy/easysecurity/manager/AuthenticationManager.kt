@@ -13,7 +13,7 @@ class AuthenticationManager(private val authenticateService: AuthenticateService
     authentication: Authentication
   ): Mono<Authentication> = Mono.justOrEmpty(
     authentication.credentials.string
-  ).switchIfEmpty(Mono.empty()).map { mono { authenticateService.tokenToModel(
+  ).switchIfEmpty(Mono.empty()).map { mono { authenticateService.tokenToUserAuth(
     it
   ) } }.flatMap {
     it

@@ -39,7 +39,7 @@ class AuthenticateService(
     const val MAPPED_ID_PARAM = "mappedId"
   }
 
-  suspend fun tokenToModel(token: String, signKey: String = securityProperties.signKey): UserAuth? = with(
+  suspend fun tokenToUserAuth(token: String, signKey: String = securityProperties.signKey): UserAuth? = with(
     Jwts.parser().setSigningKey(signKey).parseClaimsJws(token).body
   ) {
     val sessionId: UUID = UUID.fromString(this.subject)
@@ -51,9 +51,9 @@ class AuthenticateService(
     return toUserAuth()
   }
 
-  fun tokenCreator(sessionId: UUID, user: UserAuth, amont: Long, unit: ChronoUnit, signKey: String): Token {
+  fun tokenCreator(sessionId: UUID, user: UserAuth, amount: Long, unit: ChronoUnit, signKey: String): Token {
     val roles = user.authorities.map { it.authority }.toSet()
-    val limit: Instant = now().plus(amont, unit)
+    val limit: Instant = now().plus(amount, unit)
     return Token(Jwts.builder().signWith(
       HS512,
       signKey

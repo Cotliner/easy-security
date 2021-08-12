@@ -25,16 +25,6 @@ class AuthenticateService(
   private val mongoTemplate: ReactiveMongoTemplate
 ) {
   companion object {
-    /* PARAMS */
-    const val ID = "id"
-    const val USERNAME = "username"
-    const val SEX = "sex"
-    const val ACCOUNT_NON_EXPIRED = "accountNonExpired"
-    const val ACCOUNT_NON_LOCKED = "accountNonLocked"
-    const val CREDENTIALS_NON_EXPIRED = "credentialsNonExpired"
-    const val ENABLE = "enable"
-    const val ROLES = "roles"
-
     /* QUERIES PARAM */
     const val MAPPED_ID_PARAM = "mappedId"
   }
@@ -49,36 +39,5 @@ class AuthenticateService(
     if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 
     return toUserAuth()
-  }
-
-  fun tokenCreator(sessionId: UUID, user: UserAuth, amount: Long, unit: ChronoUnit, signKey: String): Token {
-    val roles = user.authorities.map { it.authority }.toSet()
-    val limit: Instant = now().plus(amount, unit)
-    return Token(Jwts.builder().signWith(
-      HS512,
-      signKey
-    ).setClaims(getClaims(
-      user,
-      roles
-    )).setSubject(
-      sessionId.string
-    ).setIssuedAt(Date.from(
-      now()
-    )).setExpiration(Date.from(limit)).compact(), limit)
-  }
-
-  @VisibleForTesting fun getClaims(
-    user: UserAuth,
-    roles: Set<String>
-  ): Map<String, Any> = with(HashMap<String, Any>()) {
-    this[ID] = user.id
-    this[USERNAME] = user.username
-    this[SEX] = user.sex
-    this[ROLES] = roles
-    this[ACCOUNT_NON_EXPIRED] = user.isAccountNonExpired
-    this[ACCOUNT_NON_LOCKED] = user.isAccountNonLocked
-    this[CREDENTIALS_NON_EXPIRED] = user.isCredentialsNonExpired
-    this[ENABLE] = user.isEnabled
-    return this
   }
 }

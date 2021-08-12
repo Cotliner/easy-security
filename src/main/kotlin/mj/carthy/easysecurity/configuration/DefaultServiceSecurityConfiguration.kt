@@ -16,13 +16,16 @@ class DefaultServiceSecurityConfiguration: BaseSecurityConfiguration() {
     authenticationManager: AuthenticationManager,
     securityContextRepository: SecurityContextRepository,
     http: ServerHttpSecurity
-  ): SecurityWebFilterChain = super.securityWebFilterChain(authenticationManager, securityContextRepository, http.authenticationManager(
-    authenticationManager
+  ): SecurityWebFilterChain = super.securityWebFilterChain(authenticationManager, securityContextRepository, http
+    .requestCache()
+    .disable()
+    .cors()
+    .disable()
+    .headers()
+    .disable()
+    .authenticationManager(
+      authenticationManager
   ).securityContextRepository(
     securityContextRepository
-  ).authorizeExchange().pathMatchers(
-    "/api/mocks/**"
-  ).permitAll().pathMatchers(
-    "/api/**"
-  ).authenticated().anyExchange().authenticated().and())
+  ).authorizeExchange().anyExchange().authenticated().and())
 }

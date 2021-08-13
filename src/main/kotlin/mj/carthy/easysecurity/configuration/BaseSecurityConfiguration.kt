@@ -18,15 +18,16 @@ open class BaseSecurityConfiguration {
     securityContextRepository: SecurityContextRepository,
     http: ServerHttpSecurity
   ): SecurityWebFilterChain = http
-    .csrf()
-    .disable()
-    .formLogin()
-    .disable()
-    .httpBasic()
-    .disable()
+
+    .csrf().disable()
+    .formLogin().disable()
+    .httpBasic().disable()
+
     .authenticationManager(authenticationManager)
     .securityContextRepository(securityContextRepository)
+
     .exceptionHandling()
+
     .authenticationEntryPoint { swe: ServerWebExchange, _: AuthenticationException ->
       Mono.fromRunnable { swe.response.statusCode = UNAUTHORIZED }
     }.accessDeniedHandler { swe: ServerWebExchange, _: AccessDeniedException ->

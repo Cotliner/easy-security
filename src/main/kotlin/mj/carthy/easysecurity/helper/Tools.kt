@@ -75,3 +75,5 @@ fun getClaims(user: UserAuth, roles: Set<String>): Map<String, Any> = with(HashM
   this[ENABLE] = user.isEnabled
   return this
 }
+
+fun isUserAdmin(user: UserAuth) = user.authorities.stream().map { it as GrantedAuthority }.map { it.authority }.anyMatch { "ADMIN" == it }

@@ -1,6 +1,7 @@
 package mj.carthy.easysecurity.service
 
 import com.google.common.annotations.VisibleForTesting
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm.HS512
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -10,6 +11,7 @@ import mj.carthy.easysecurity.jwtconfiguration.SecurityProperties
 import mj.carthy.easysecurity.model.Token
 import mj.carthy.easysecurity.model.UserAuth
 import mj.carthy.easyutils.helper.string
+import mj.carthy.easyutils.helper.uuid
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -29,15 +31,14 @@ class AuthenticateService(
     const val MAPPED_ID_PARAM = "mappedId"
   }
 
-  suspend fun tokenToUserAuth(token: String, signKey: String = securityProperties.signKey): UserAuth? = with(
-    Jwts.parser().setSigningKey(signKey).parseClaimsJws(token).body
-  ) {
-    val sessionId: UUID = UUID.fromString(this.subject)
-
+  suspend fun tokenToUserAuth(claims: Claims, sessionId: UUID): UserAuth? {
     val query = Query().addCriteria(Criteria.where(MAPPED_ID_PARAM).`is`(sessionId))
 
     if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 
-    return toUserAuth()
+    return claims.toUserAuth()
   }
+
+  fun tokenParser(token: String, signKey: String = securityProperties.signKey): Claims = Jwts.parser().setSigningKey(signKey).parseClaimsJws(token).body
+  fun sessionId(claims: Claims): UUID = claims.subject.uuid
 }

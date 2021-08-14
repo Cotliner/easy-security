@@ -12,6 +12,7 @@ import mj.carthy.easyutils.helper.string
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Instant
+import java.time.Instant.now
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -48,9 +49,8 @@ fun Claims.toUserAuth(): UserAuth {
   return UserAuth(id, sex, username, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
 }
 
-fun tokenCreator(sessionId: UUID, user: UserAuth, amount: Long, unit: ChronoUnit, signKey: String): Token {
+fun tokenCreator(sessionId: UUID, user: UserAuth, deadline: Instant, signKey: String): Token {
   val roles = user.authorities.map { it.authority }.toSet()
-  val limit: Instant = Instant.now().plus(amount, unit)
   return Token(Jwts.builder().signWith(
     SignatureAlgorithm.HS512,
     signKey
@@ -60,8 +60,8 @@ fun tokenCreator(sessionId: UUID, user: UserAuth, amount: Long, unit: ChronoUnit
   )).setSubject(
     sessionId.string
   ).setIssuedAt(Date.from(
-    Instant.now()
-  )).setExpiration(Date.from(limit)).compact(), limit)
+    now()
+  )).setExpiration(Date.from(deadline)).compact(), deadline)
 }
 
 fun getClaims(user: UserAuth, roles: Set<String>): Map<String, Any> = with(HashMap<String, Any>()) {

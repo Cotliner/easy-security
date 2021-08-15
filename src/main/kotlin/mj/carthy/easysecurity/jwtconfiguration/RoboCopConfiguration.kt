@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.UUID.randomUUID
 
+@EnableScheduling
 @Configuration class RoboCopConfiguration {
   /* PROPERTIES */
   @Bean fun roboCopTopic(@Value("\${security.robo-cop.topic:#{null}}") topic: String?): String = topic ?: "robo-cop"

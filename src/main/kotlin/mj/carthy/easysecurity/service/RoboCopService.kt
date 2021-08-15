@@ -29,5 +29,5 @@ class RoboCopService(
   fun consume(session: String) { GlobalScope.launch { mongoTemplate.save(objectMapper.readValue(session, RoboCop::class.java)).awaitSingle() } }
 
   @DelicateCoroutinesApi
-  @Scheduled(cron = "#{@roboCopCron}") fun deleteExpireRoboCop() { GlobalScope.launch { mongoTemplate.remove(Query(Criteria.where(DEADLINE).lt(now())), RoboCop::class.java) } }
+  @Scheduled(cron = "#{@roboCopCron}") fun deleteExpireRoboCop() { GlobalScope.launch { mongoTemplate.remove(Query(Criteria.where(DEADLINE).lt(now())), RoboCop::class.java).awaitSingle() } }
 }

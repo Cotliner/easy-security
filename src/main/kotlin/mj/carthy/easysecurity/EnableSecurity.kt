@@ -1,6 +1,7 @@
 package mj.carthy.easysecurity
 
-import mj.carthy.easysecurity.jwtconfiguration.TokenConfiguration
+import mj.carthy.easysecurity.configuration.SecurityConfig
+import mj.carthy.easysecurity.configuration.TokenConfig
 import org.springframework.context.annotation.Import
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.ANNOTATION_CLASS
@@ -8,5 +9,5 @@ import kotlin.annotation.AnnotationTarget.CLASS
 
 @Target(ANNOTATION_CLASS, CLASS)
 @Retention(RUNTIME)
-@Import(TokenConfiguration::class)
+@Import(SecurityConfig::class, TokenConfig::class)
 annotation class EnableSecurity

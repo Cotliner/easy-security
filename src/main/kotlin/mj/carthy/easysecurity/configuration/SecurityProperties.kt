@@ -1,4 +1,4 @@
-package mj.carthy.easysecurity.jwtconfiguration
+package mj.carthy.easysecurity.configuration
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.temporal.ChronoUnit

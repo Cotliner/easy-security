@@ -13,10 +13,10 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @ConditionalOnProperty(value = ["security.web.enabled"], matchIfMissing = true)
-class DefaultServiceSecurityConfiguration(
+class DefaultSecurityConfig(
   /* PROPERTIES */
   @Value("\${springdoc.authorize.path:}") private val authorizeSwaggerPath: Array<String>,
-): BaseSecurityConfiguration() {
+): BaseSecurityConfig() {
   override fun securityWebFilterChain(
     authenticationManager: AuthenticationManager,
     securityContextRepository: SecurityContextRepository,

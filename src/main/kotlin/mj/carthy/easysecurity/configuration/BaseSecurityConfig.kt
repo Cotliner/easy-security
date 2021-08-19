@@ -12,7 +12,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-open class BaseSecurityConfiguration {
+open class BaseSecurityConfig {
   @Bean open fun securityWebFilterChain(
     authenticationManager: AuthenticationManager,
     securityContextRepository: SecurityContextRepository,

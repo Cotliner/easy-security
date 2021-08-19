@@ -5,12 +5,14 @@ import io.jsonwebtoken.Jwts
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mj.carthy.easysecurity.document.RoboCop
 import mj.carthy.easysecurity.helper.toUserAuth
-import mj.carthy.easysecurity.jwtconfiguration.SecurityProperties
+import mj.carthy.easysecurity.configuration.SecurityProperties
 import mj.carthy.easysecurity.model.UserAuth
 import mj.carthy.easyutils.helper.uuid
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import java.time.LocalDate
+import java.time.Period
 import java.util.*
 
 class AuthenticateService(

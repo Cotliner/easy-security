@@ -1,5 +1,6 @@
 package mj.carthy.easysecurity.helper
 
+import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -76,4 +77,5 @@ fun getClaims(user: UserAuth, roles: Set<String>): Map<String, Any> = with(HashM
   return this
 }
 
-fun isUserAdmin(user: UserAuth) = user.authorities.stream().map { it as GrantedAuthority }.map { it.authority }.anyMatch { "ADMIN" == it }
+fun UserAuth.isAllow(authority: Set<GrantedAuthority>): Boolean = this.authorities.any { it in authority }
+val UserAuth.isAdmin get(): Boolean = this.authorities.stream().map { it as GrantedAuthority }.map { it.authority }.anyMatch { "ADMIN" == it }

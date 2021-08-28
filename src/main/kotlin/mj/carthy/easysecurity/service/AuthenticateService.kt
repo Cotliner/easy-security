@@ -6,13 +6,13 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mj.carthy.easysecurity.document.RoboCop
 import mj.carthy.easysecurity.helper.toUserAuth
 import mj.carthy.easysecurity.configuration.SecurityProperties
+import mj.carthy.easysecurity.helper.isAdmin
+import mj.carthy.easysecurity.helper.isAllow
 import mj.carthy.easysecurity.model.UserAuth
 import mj.carthy.easyutils.helper.uuid
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import java.time.LocalDate
-import java.time.Period
 import java.util.*
 
 class AuthenticateService(
@@ -31,7 +31,11 @@ class AuthenticateService(
 
     if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 
-    return claims.toUserAuth()
+    val user: UserAuth = claims.toUserAuth()
+    val authorizeRole = securityProperties.authorizeRole
+    val isUserAllow = authorizeRole.isEmpty() || user.isAdmin || user.isAllow(authorizeRole)
+
+    return if (isUserAllow) user else null
   }
 
   fun tokenParser(token: String, signKey: String = securityProperties.signKey): Claims = Jwts.parser().setSigningKey(signKey).parseClaimsJws(token).body

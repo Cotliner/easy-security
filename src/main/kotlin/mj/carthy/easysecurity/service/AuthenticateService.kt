@@ -31,9 +31,9 @@ class AuthenticateService(
 
     if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 
-    val user: UserAuth = claims.toUserAuth()
-    val authorizeRole = securityProperties.authorizeRole
-    val isUserAllow = authorizeRole.isEmpty() || user.isAdmin || user.isAllow(authorizeRole)
+    val user: UserAuth = claims.toUserAuth
+    val authorizedRole = securityProperties.authorizedRole
+    val isUserAllow = authorizedRole.isEmpty() || user.isAdmin || user.isAllow(authorizedRole)
 
     return if (isUserAllow) user else null
   }

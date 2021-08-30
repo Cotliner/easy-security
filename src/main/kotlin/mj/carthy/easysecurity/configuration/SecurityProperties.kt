@@ -10,5 +10,5 @@ data class SecurityProperties(
   var signKey: String = "g~DS<EHd)Vr+C&#8:[ba",
   var amount: Long = 5,
   var unit: ChronoUnit = MINUTES,
-  var authorizeRole: Set<GrantedAuthority> = emptySet()
+  var authorizedRole: Set<String> = emptySet()
 )

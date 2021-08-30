@@ -1,6 +1,5 @@
 package mj.carthy.easysecurity.helper
 
-import com.google.common.annotations.VisibleForTesting
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -14,10 +13,9 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.time.Instant
 import java.time.Instant.now
-import java.time.temporal.ChronoUnit
 import java.util.*
 
-/* TOKEN PARAMS */
+/* CONSTANTS  */
 const val ID = "id"
 const val USERNAME = "username"
 const val SEX = "sex"
@@ -26,17 +24,19 @@ const val ACCOUNT_NON_LOCKED = "accountNonLocked"
 const val CREDENTIALS_NON_EXPIRED = "credentialsNonExpired"
 const val ENABLE = "enable"
 const val ROLES = "roles"
-
-/* OTHER PARAMS */
 const val UNKNOWN_SEX = "Can not inverse unknown sex"
 
-fun Sex.inversed(): Sex = when(this) {
+/* VALUES */
+
+val UserAuth.isAdmin get(): Boolean = authorities.stream().map { it as GrantedAuthority }.map { it.authority }.anyMatch { "ADMIN" == it }
+
+val Sex.inversed get(): Sex = when(this) {
   Sex.MALE -> Sex.FEMALE
   Sex.FEMALE -> Sex.MALE
   Sex.UNKNOWN -> throw UnprocessedException(PROPERTY_NOT_FOUND, UNKNOWN_SEX)
 }
 
-fun Claims.toUserAuth(): UserAuth {
+val Claims.toUserAuth get(): UserAuth {
   val id: UUID = UUID.fromString(this.get(ID, String::class.java))
   val username: String = this.get(USERNAME, String::class.java)
   val sex: Sex = Sex.valueOf(this.get(SEX, String::class.java))
@@ -49,6 +49,8 @@ fun Claims.toUserAuth(): UserAuth {
 
   return UserAuth(id, sex, username, authorities, accountNonExpired, accountNonLocked, credentialsNonExpired, enable)
 }
+
+/* METHODS */
 
 fun tokenCreator(sessionId: UUID, user: UserAuth, deadline: Instant, signKey: String): Token {
   val roles = user.authorities.map { it.authority }.toSet()
@@ -77,5 +79,4 @@ fun getClaims(user: UserAuth, roles: Set<String>): Map<String, Any> = with(HashM
   return this
 }
 
-fun UserAuth.isAllow(authority: Set<GrantedAuthority>): Boolean = this.authorities.any { it in authority }
-val UserAuth.isAdmin get(): Boolean = this.authorities.stream().map { it as GrantedAuthority }.map { it.authority }.anyMatch { "ADMIN" == it }
+fun UserAuth.isAllow(authorizedRole: Set<String>): Boolean = authorities.any { it.string in authorizedRole }

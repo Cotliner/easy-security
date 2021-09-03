@@ -25,10 +25,12 @@ class RoboCopService(
 
   @DelicateCoroutinesApi
   @KafkaListener(topics = ["#{@roboCopTopic}"], groupId = "#{@roboCopGroupId}")
-  fun consume(record: ConsumerRecord<String, Map<String, String>>) = with(gson.fromJson(gson.toJsonTree(record.value()), RoboCop::class.java)) { GlobalScope.launch { if (!isExist()) save() } }
+  fun consume(record: ConsumerRecord<String, Map<String, String>>) = with(gson.make<RoboCop>(record)) { GlobalScope.launch { if (!isExist()) save() } }
 
   private suspend fun RoboCop.isExist(): Boolean = mongoTemplate.exists(Query(where(MAPPED_ID).`is`(this.id)), RoboCop::class.java).awaitSingle()
   private suspend fun RoboCop.save(): RoboCop = mongoTemplate.save(this).awaitSingle()
+
+  private inline fun <reified T> Gson.make(record: ConsumerRecord<String, Map<String, String>>) = fromJson(toJsonTree(record.value()), T::class.java)
 
   @DelicateCoroutinesApi
   @Scheduled(cron = "#{@roboCopCron}")

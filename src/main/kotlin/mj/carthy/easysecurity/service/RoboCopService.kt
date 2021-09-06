@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import kotlinx.coroutines.*
 import kotlinx.coroutines.reactor.awaitSingle
 import mj.carthy.easysecurity.document.RoboCop
+import mj.carthy.easyutils.helper.consume
+import mj.carthy.easyutils.helper.makeFrom
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria.where
@@ -25,14 +27,12 @@ class RoboCopService(
 
   @DelicateCoroutinesApi
   @KafkaListener(topics = ["#{@roboCopTopic}"], groupId = "#{@roboCopGroupId}")
-  fun consume(record: ConsumerRecord<String, Map<String, String>>) = with(gson.make<RoboCop>(record)) { GlobalScope.launch { if (!isExist()) save() } }
+  fun consume(record: ConsumerRecord<String, Map<String, String>>): Unit = with(gson.makeFrom<RoboCop>(record)) { consume{ if (!isExist()) save() } }
 
   private suspend fun RoboCop.isExist(): Boolean = mongoTemplate.exists(Query(where(MAPPED_ID).`is`(this.id)), RoboCop::class.java).awaitSingle()
   private suspend fun RoboCop.save(): RoboCop = mongoTemplate.save(this).awaitSingle()
 
-  private inline fun <reified T> Gson.make(record: ConsumerRecord<String, Map<String, String>>) = fromJson(toJsonTree(record.value()), T::class.java)
-
   @DelicateCoroutinesApi
   @Scheduled(cron = "#{@roboCopCron}")
-  fun deleteExpireRoboCop() { GlobalScope.launch { mongoTemplate.remove(Query(where(DEADLINE).lt(now())), RoboCop::class.java).awaitSingle() } }
+  fun deleteExpireRoboCop() { consume { mongoTemplate.remove(Query(where(DEADLINE).lt(now())), RoboCop::class.java).awaitSingle() } }
 }

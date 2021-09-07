@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import java.time.Instant.now
 
 class RoboCopService(
+  /* CLIENTS */
   private val gson: Gson,
   /* REPOSITORIES */
   private val mongoTemplate: ReactiveMongoTemplate,

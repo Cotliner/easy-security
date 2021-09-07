@@ -23,11 +23,11 @@ class AuthenticateService(
 ) {
   companion object {
     /* QUERIES PARAM */
-    const val MAPPED_ID_PARAM: String = "mappedId"
+    const val MAPPED_ID: String = "mappedId"
   }
 
   suspend fun tokenToUserAuth(claims: Claims, sessionId: UUID): UserAuth? {
-    val query = Query().addCriteria(Criteria.where(MAPPED_ID_PARAM).`is`(sessionId))
+    val query = Query().addCriteria(Criteria.where(MAPPED_ID).`is`(sessionId))
 
     if (mongoTemplate.find(query, RoboCop::class.java).awaitFirstOrNull() != null) return null
 

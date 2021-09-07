@@ -11,16 +11,15 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder.g
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.userdetails.UserDetails
 import java.time.Instant
-import java.util.*
 
-class AuditDocumentCallback: ReactiveBeforeConvertCallback<BaseDocument<UUID?>> {
+class AuditDocumentCallback<ID>(private val idGenerator: () -> ID): ReactiveBeforeConvertCallback<BaseDocument<ID?>> {
 
   companion object { const val SYSTEM = "system" }
 
   override fun onBeforeConvert(
-    document: BaseDocument<UUID?>,
+    document: BaseDocument<ID?>,
     collection: String
-  ): Publisher<BaseDocument<UUID?>> = mono {
+  ): Publisher<BaseDocument<ID?>> = mono {
     val now = Instant.now()
     val username = username()
 
@@ -31,17 +30,17 @@ class AuditDocumentCallback: ReactiveBeforeConvertCallback<BaseDocument<UUID?>> 
     document
   }
 
-  @VisibleForTesting fun <T : BaseDocument<UUID?>> setCreated(
+  @VisibleForTesting fun <T : BaseDocument<ID?>> setCreated(
     documentToAudit: T,
     username: String,
     date: Instant
   ): Unit = with(documentToAudit) {
-    id = UUID.randomUUID()
+    id = idGenerator()
     createdBy = username
     createdDate = date
   }
 
-  @VisibleForTesting fun <T : BaseDocument<UUID?>> setLastModifiedDate(
+  @VisibleForTesting fun <T : BaseDocument<ID?>> setLastModifiedDate(
     documentToAudit: T,
     username: String,
     date: Instant

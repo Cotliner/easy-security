@@ -27,11 +27,9 @@ class DefaultSecurityConfig(
     .cors().disable()
     .headers().disable()
 
-    .authenticationManager(
-      authenticationManager
-  ).securityContextRepository(
-    securityContextRepository
-  ).authorizeExchange().emptyAblePathMatchers(
-      *authorizeSwaggerPath
-  ).anyExchange().authenticated().and())
+    .authenticationManager(authenticationManager)
+    .securityContextRepository(securityContextRepository)
+    .authorizeExchange()
+    .emptyAblePathMatchers(*authorizeSwaggerPath)
+    .anyExchange().authenticated().and())
 }

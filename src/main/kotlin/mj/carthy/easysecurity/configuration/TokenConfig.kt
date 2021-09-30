@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 @EnableConfigurationProperties(SecurityProperties::class)
 @Configuration class TokenConfig(
   /* PROPERTIES */
-  val securityProperties: SecurityProperties
+  private val securityProperties: SecurityProperties
 ) {
   @Bean fun tokenValidator(): TokenValidator = TokenValidator()
   @Bean fun authenticateService(mongoTemplate: ReactiveMongoTemplate): AuthenticateService = AuthenticateService(securityProperties, mongoTemplate)

@@ -1,7 +1,6 @@
 package mj.carthy.easysecurity.configuration
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.security.core.GrantedAuthority
 import java.time.temporal.ChronoUnit
 import java.time.temporal.ChronoUnit.MINUTES
 
